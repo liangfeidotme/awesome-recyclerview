@@ -1,2 +1,2 @@
-* [IRecyclerView](https://github.com/aspsine/irecyclerview)
-* [SuperSLiM](https://github.com/TonicArtos/SuperSLiM)
+* [IRecyclerView](https://github.com/aspsine/irecyclerview) - [Note](IRecyclerView.md)
+* [SuperSLiM](https://github.com/TonicArtos/SuperSLiM) - [Note](SuperSLiM.md)
