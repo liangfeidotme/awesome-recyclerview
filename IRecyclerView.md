@@ -51,3 +51,5 @@ public interface OnRefreshListener {
 ### SimpleAnimatorListener
 
 `Animator.AnimatorListener` 的空实现，其实可以用 [`AnimatorListenerAdapter`](http://developer.android.com/reference/android/animation/AnimatorListenerAdapter.html)
+
+
