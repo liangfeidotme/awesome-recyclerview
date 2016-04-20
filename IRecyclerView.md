@@ -1,5 +1,78 @@
+## WrapperAdapter
+
+`WrapperAdapter` 继承自 `RecyclerView.Adapter<RecyclerView.ViewHolder>`，内部定义了一个 `RecyclerView.Adapter` 类型的成员变量 `mAdapter`：
+
+```java
+private final RecyclerView.Adapter mAdapter;
+```
+
+因此 `WrapperAdapter` 是 `mAdapter` 的 **wrapper**，`mAdapter` 中存储了“真正”的数据。
+`WrapperAdapter` 在 `mAdapter` 的基础上增加了 4 个 类型的 item:
+
+```java
+protected static final int REFRESH_HEADER = Integer.MIN_VALUE;
+protected static final int HEADER = Integer.MIN_VALUE;
+protected static final int REFRESH_HEADER = Integer.MIN_VALUE;
+protected static final int REFRESH_HEADER = Integer.MIN_VALUE;
+protected static final int REFRESH_HEADER = Integer.MIN_VALUE;
+```
+
+因此 **itemCount** 比 `mAdapter` 增加了 4 个。
+
+```java
+@Override
+public int getItemCount() {
+  return mAdapter.getItemCount() + 4;
+}
+```
+
+重新调整了 `position` 对应的 **itemType**：
+
+```java
+@Override
+public int getItemType(int position) {
+  if (position == 0) return REFRESH_HEADER
+  if (position == 1) return HEADER; 
+  if (1 < position && position < mAdapter.getItemCount() + 2) return mAdapter.getItemViewType(position - 2); 
+  if (position == mAdapter.getItemCount() + 2) return FOOTER; 
+  if (position == mAdapter.getItemCount() + 3) return LOAD_MORE_FOOTER;
+}
+```
+
+那么 **ViewType** 对应的 `ViewHolder` 也会发生变化：
+
+```java
+@Override
+public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+  if (viewType == REFRESH_HEADER) return new RefreshHeaderContainerViewHolder(mRefreshHeaderContainer);
+  if (viewType == HEADER) return new HeaderContainerViewHolder(mHeaderContainer);
+  if (viewType == FOOTER) return new FooterContainerViewHolder(mFooterContainer);
+  if (viewType == LOAD_MORE_FOOTER) return new LoadMoreFooterContainerViewHolder(mLoadMoreFooterContainer);
+  return mAdapter.onCreateViewHolder(parent, viewType);
+}
+```
+
+其中 `mRefreshHeaderContainer`、`mHeaderContainer`、`mFooterContainer`、`mLoadMoreFooterContainer` 是通过构造函数传递进来的 View：
+
+```java
+public WrapperAdapter(RecyclerView.Adapter adapter, RefreshHeaderLayout refreshHeaderContainer,
+                      LinearLayout headerContainer, LinearLayout footerContainer,
+                      FrameLayout loadMoreFooterContainer) {
+  mAdapter = adapter;
+  mRefreshHeaderContainer = refreshHeaderContainer;
+  mHeaderContainer = headerContainer;
+  mFooterContainer = footerContainer;
+  mLoadMoreFooterContainer = loadMoreFooterContainer;
+  mAdapter.registerAdapterDataObserver(mObserver);
+}
+```
+
+构造函数的最后一行为 `mAdapter` 注册了一个 **AdapterDataObserver**：
+```java
+mAdapter.registerAdapterDataObserver(mObserver)
+```
+
 ## RefreshHeaderLayout
----
 
 继承自 `ViewGroup`，重新实现了 `onMeasure` & `onLayout`，只处理第一个子 View（`View view = getChildAt(0)`)。
 在 `onMeasure` 中把子 View 的 `measureSpec` 修改为 `MeasureSpec.UNSPECIFIED`，**交给上层 View 去测量大小**。
