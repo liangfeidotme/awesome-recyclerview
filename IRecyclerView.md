@@ -6,7 +6,25 @@
 private final RecyclerView.Adapter mAdapter;
 ```
 
-因此 `WrapperAdapter` 是 `mAdapter` 的 **wrapper**，`mAdapter` 中存储了“真正”的数据。
+`mAdapter` 通过构造函数由外部传递进来。
+
+```java
+public WrapperAdapter(RecyclerView.Adapter adapter, RefreshHeaderLayout refreshHeaderContainer,
+                      LinearLayout headerContainer, LinearLayout footerContainer,
+                      FrameLayout loadMoreFooterContainer) {
+  mAdapter = adapter;
+  mRefreshHeaderContainer = refreshHeaderContainer;
+  mHeaderContainer = headerContainer;
+  mFooterContainer = footerContainer;
+  mLoadMoreFooterContainer = loadMoreFooterContainer;
+  mAdapter.registerAdapterDataObserver(mObserver);
+}
+```
+
+其中 `mRefreshHeaderContainer`、`mHeaderContainer`、`mFooterContainer`、`mLoadMoreFooterContainer` 会在创建 **ViewHolder** 的时候会被用到。
+
+以上分析可见 `WrapperAdapter` 确实是 `mAdapter` 的一个 **wrapper**，`mAdapter` 中存储了“真正”的数据，并且由外部传递进来。
+
 `WrapperAdapter` 在 `mAdapter` 的基础上增加了 4 个 类型的 item:
 
 ```java
@@ -17,7 +35,7 @@ protected static final int REFRESH_HEADER = Integer.MIN_VALUE;
 protected static final int REFRESH_HEADER = Integer.MIN_VALUE;
 ```
 
-因此 **itemCount** 比 `mAdapter` 增加了 4 个。
+因此 `WrapperAdapter` 的 **itemCount** 比 `mAdapter` 多了 4 个。
 
 ```java
 @Override
@@ -26,7 +44,7 @@ public int getItemCount() {
 }
 ```
 
-重新调整了 `position` 对应的 **itemType**：
+相应的 `position` 所对应的 **itemType** 也发生了变化。
 
 ```java
 @Override
@@ -52,24 +70,79 @@ public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType
 }
 ```
 
-其中 `mRefreshHeaderContainer`、`mHeaderContainer`、`mFooterContainer`、`mLoadMoreFooterContainer` 是通过构造函数传递进来的 View：
+构造 **ViewHolder** 时用到的 View 就是经由 `WrapperAdapter` 构造函数传递进来的四个 **View**。
+其中 **ViewHolder** 的实现非常简单，都是继承自 `RecyclerView.ViewHolder`，例如 `RefreshHeaderContainerViewHolder`：
 
 ```java
-public WrapperAdapter(RecyclerView.Adapter adapter, RefreshHeaderLayout refreshHeaderContainer,
-                      LinearLayout headerContainer, LinearLayout footerContainer,
-                      FrameLayout loadMoreFooterContainer) {
-  mAdapter = adapter;
-  mRefreshHeaderContainer = refreshHeaderContainer;
-  mHeaderContainer = headerContainer;
-  mFooterContainer = footerContainer;
-  mLoadMoreFooterContainer = loadMoreFooterContainer;
-  mAdapter.registerAdapterDataObserver(mObserver);
-}
+static class RefreshHeaderContainerViewHolder extends RecyclerView.ViewHolder {
+  public RefreshHeaderContainerViewHolder(View itemView) {
+    super(itemView);
+  }   
+}  
 ```
 
-构造函数的最后一行为 `mAdapter` 注册了一个 **AdapterDataObserver**：
+由以上分析可得出 `WrapperAdapter` 对应着如下布局结构：
+
+```
+********************
+* REFRESH_HEADER   * position = 0
+********************
+*     HEADER       * position = 1
+********************
+*     .....        *
+********************
+*     .....        *
+********************
+*     ......       * 
+********************
+*     FOOTER       * position = mAdapter.getItemCount() + 2
+********************
+* LOAD_MORE_FOOTER * position = mAdapter.getItemCount() + 3
+********************
+```
+
+由上图可以看出，新增的 4 种 **item** 都需要与 `RecyclerView` 同宽。
+
+---
+
+`WrapperAdapter` 构造函数的最后一行为 `mAdapter` 注册了一个 **AdapterDataObserver**：
 ```java
 mAdapter.registerAdapterDataObserver(mObserver)
+```
+这个 `mObserver` 会把 `mAdapter` 中发生的**数据变化**转发给 `WrapperAdapter`，这样 `WrapperAdapter` 就接管了 `mAdapter` 的数据变化。
+
+```java
+private RecyclerView.AdapterDataObserver mObserver = new RecyclerView.AdapterDataObserver() {
+    @Override
+    public void onChanged() {
+        WrapperAdapter.this.notifyDataSetChanged();
+    }
+
+    @Override
+    public void onItemRangeChanged(int positionStart, int itemCount) {
+        WrapperAdapter.this.notifyItemRangeChanged(positionStart + 2, itemCount);
+    }
+
+    @Override
+    public void onItemRangeChanged(int positionStart, int itemCount, Object payload) {
+        WrapperAdapter.this.notifyItemRangeChanged(positionStart + 2, itemCount, payload);
+    }
+
+    @Override
+    public void onItemRangeInserted(int positionStart, int itemCount) {
+        WrapperAdapter.this.notifyItemRangeInserted(positionStart + 2, itemCount);
+    }
+
+    @Override
+    public void onItemRangeRemoved(int positionStart, int itemCount) {
+        WrapperAdapter.this.notifyItemRangeRemoved(positionStart + 2, itemCount);
+    }
+
+    @Override
+    public void onItemRangeMoved(int fromPosition, int toPosition, int itemCount) {
+        WrapperAdapter.this.notifyDataSetChanged();
+    }
+};
 ```
 
 ## RefreshHeaderLayout
