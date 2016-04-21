@@ -1,5 +1,1 @@
-Repos | Notes
----|---
-[IRecyclerView](https://github.com/aspsine/irecyclerview) | [Note](IRecyclerView.md)
-[twoway-view](https://github.com/lucasr/twoway-view) | [Note](twoway-view.md)
-[SuperSLiM](https://github.com/TonicArtos/SuperSLiM) | [Note](SuperSLiM.md)
+[TitanRecyclerView](https://github.com/youzan/TitanRecyclerView) 是**有赞**开源的第一个 UI 组件，为了把 **TitanRecyclerView** 打造成一件**绝世精品**，我打算读很多有关 `RecyclerView` 的源码，于是就有了这么一个细粒度的 awesome 系列 - _awesome-recyclerview_。

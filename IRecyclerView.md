@@ -1,3 +1,7 @@
+# IRecyclerView
+
+[源码地址](https://github.com/aspsine/irecyclerview)
+
 ## WrapperAdapter
 
 `WrapperAdapter` 继承自 `RecyclerView.Adapter<RecyclerView.ViewHolder>`，内部定义了一个 `RecyclerView.Adapter` 类型的成员变量 `mAdapter`：
