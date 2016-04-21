@@ -1,6 +1,8 @@
 # IRecyclerView
 
-[源码地址](https://github.com/aspsine/irecyclerview)
+> [源码地址](https://github.com/aspsine/irecyclerview)
+
+_这篇文章只分析了如何实现 FOOTER & HEADER，不包含下拉刷新的功能，以后用到了再补。_
 
 ## WrapperAdapter
 
