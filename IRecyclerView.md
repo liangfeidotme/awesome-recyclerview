@@ -54,7 +54,7 @@ public int getItemCount() {
 ```java
 @Override
 public int getItemType(int position) {
-  if (position == 0) return REFRESH_HEADER
+  if (position == 0) return REFRESH_HEADER;
   if (position == 1) return HEADER; 
   if (1 < position && position < mAdapter.getItemCount() + 2) return mAdapter.getItemViewType(position - 2); 
   if (position == mAdapter.getItemCount() + 2) return FOOTER; 
